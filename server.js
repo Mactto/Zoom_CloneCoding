@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const server = require('http').Server(app)
+const io = require('socket.io')(server);
 const { v4: uuidv4 } = require('uuid');
 
 app.set('view engine', 'ejs');
@@ -13,6 +15,13 @@ app.get('/:room', (req, res) => {
     res.render('room', { roomId: req.params.room })
 })
 
-app.listen(5000, () => {
+io.on('connection', socket => {
+    socket.on('join-room', (roomId) => {
+        socket.join(roomId);
+        socket.to(roomId).broadcast.emit('user-connected');
+    })
+})
+
+server.listen(5000, () => {
     console.log("Server is Working on 5000 port");
 })
